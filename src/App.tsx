@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ForceGraph2D, { ForceGraphProps } from 'react-force-graph-2d';
-import { Loader2, Play, AlertCircle, Share2, ZoomIn, ZoomOut, Maximize, X, Search, Download, Image as ImageIcon, Undo2, Link, Upload, RotateCcw, Settings, Eye, EyeOff, Check } from 'lucide-react';
+import { Loader2, Play, AlertCircle, Share2, ZoomIn, ZoomOut, Maximize, X, Search, Download, Image as ImageIcon, Undo2, Link, Upload, RotateCcw, Settings, Eye, EyeOff, Check, Menu } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -56,6 +56,7 @@ const DEFAULT_GRAPH: GraphData = {
 
 // --- Components ---
 export default function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [inputText, setInputText] = useState('');
   const [graphData, setGraphData] = useState<GraphData>(DEFAULT_GRAPH);
   const [graphHistory, setGraphHistory] = useState<GraphData[]>([]);
@@ -283,6 +284,8 @@ export default function App() {
       setHoverNode(null);
       setSelectedNode(null);
       setSearchQuery('');
+      // Close sidebar on mobile after extraction
+      if (window.innerWidth < 768) setSidebarOpen(false);
       
       // Zoom to fit after a short delay
       setTimeout(() => {
@@ -432,21 +435,39 @@ export default function App() {
     <div className="flex flex-col h-screen w-full bg-[#0A0A0A] text-[#FFFFFF] font-['Helvetica_Neue',_Arial,_sans-serif] overflow-hidden">
       
       {/* Header */}
-      <header className="h-[100px] border-b border-[#333333] flex items-end px-[40px] pb-[20px] shrink-0">
-        <div className="flex items-end mt-auto">
-          <Share2 className="w-10 h-10 text-[#00FF66] mr-4 mb-2" />
-          <h1 className="text-[64px] font-black tracking-[-4px] leading-[0.8] uppercase m-0 p-0 text-white">
+      <header className="h-[60px] md:h-[100px] border-b border-[#333333] flex items-end px-4 md:px-[40px] pb-3 md:pb-[20px] shrink-0">
+        <div className="flex items-end mt-auto w-full">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden bg-transparent border-none text-white cursor-pointer p-1 mr-3 mb-1"
+          >
+            <Menu size={22} />
+          </button>
+          <Share2 className="w-7 h-7 md:w-10 md:h-10 text-[#00FF66] mr-3 md:mr-4 mb-1 md:mb-2" />
+          <h1 className="text-[32px] md:text-[64px] font-black tracking-[-2px] md:tracking-[-4px] leading-[0.8] uppercase m-0 p-0 text-white">
             Extractor
           </h1>
-          <p className="text-[#00FF66] font-['Courier_New',_monospace] text-[14px] ml-[20px] uppercase mb-[5px]">
+          <p className="text-[#00FF66] font-['Courier_New',_monospace] text-[10px] md:text-[14px] ml-2 md:ml-[20px] uppercase mb-[3px] md:mb-[5px] hidden sm:block">
             Structured Knowledge v2.0
           </p>
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-hidden relative">
+        {/* Mobile overlay backdrop */}
+        {sidebarOpen && (
+          <div
+            className="md:hidden fixed inset-0 bg-black/60 z-20"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Parameters Sidebar */}
-        <div className="w-[340px] flex flex-col border-r border-[#333333] p-[30px] z-10 flex-shrink-0 overflow-y-auto">
+        <div className={cn(
+          "flex flex-col border-r border-[#333333] p-5 md:p-[30px] z-30 flex-shrink-0 overflow-y-auto bg-[#0A0A0A] transition-transform duration-200",
+          "fixed md:relative inset-y-0 left-0 w-[300px] md:w-[340px]",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}>
           
           <div className="space-y-3 mb-6">
             <div className="text-[11px] uppercase tracking-[2px] text-[#666666] mb-[25px] flex items-center">
@@ -661,7 +682,7 @@ export default function App() {
         <div id="main-canvas-area" className="flex-1 relative flex items-center justify-center overflow-hidden" style={{ background: 'radial-gradient(circle at center, #111 0%, #0A0A0A 100%)' }} ref={containerRef}>
           
           {/* Canvas overlays */}
-          <div id="canvas-controls" className="absolute top-[30px] right-[30px] z-20 flex bg-[#0A0A0A] border border-[#333333] rounded-none shadow-sm overflow-hidden text-[#FFFFFF]">
+          <div id="canvas-controls" className="absolute top-3 right-3 md:top-[30px] md:right-[30px] z-20 flex bg-[#0A0A0A] border border-[#333333] rounded-none shadow-sm overflow-hidden text-[#FFFFFF]">
               <button 
                   onClick={() => graphRef.current?.zoom(graphRef.current.zoom() * 1.2, 400)}
                   className="p-2.5 hover:bg-[#1a1a1a] transition-colors border-r border-[#333333] cursor-pointer"
@@ -704,7 +725,7 @@ export default function App() {
           </div>
           
           {selectedNode && (
-              <div className="absolute bottom-[30px] right-[30px] z-30 w-80 bg-[#0A0A0A] border border-[#333333] shadow-2xl p-[20px]">
+              <div className="absolute bottom-3 right-3 left-3 md:left-auto md:bottom-[30px] md:right-[30px] z-30 md:w-80 bg-[#0A0A0A] border border-[#333333] shadow-2xl p-4 md:p-[20px]">
                   <div className="flex justify-between items-start mb-[15px]">
                       <h3 className="text-[18px] font-black uppercase text-white m-0 tracking-tight leading-tight">{selectedNode.id}</h3>
                       <button onClick={() => setSelectedNode(null)} className="text-[#666666] hover:text-white cursor-pointer bg-transparent border-none p-1">
