@@ -1,0 +1,6 @@
+{
+  "name": "Knowledge Graph Extractor",
+  "description": "Extract entities and relationships from text using Gemini into a knowledge graph visualization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
